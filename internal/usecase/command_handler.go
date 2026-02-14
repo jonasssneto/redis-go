@@ -56,7 +56,7 @@ func (h *CommandHandler) ExecuteCommand(ctx context.Context, cmd *protocol.Comma
 	case command.EXISTS:
 		return h.handleExists(ctx, cmd.Args)
 	case command.PING:
-		return h.handlePing(ctx, cmd.Args)
+		return h.handlePing(cmd.Args)
 	case command.INFO:
 		return h.handleInfo(ctx, cmd.Args)
 	default:
@@ -188,11 +188,7 @@ func (h *CommandHandler) handleExists(ctx context.Context, args []string) string
 	return h.parser.FormatResponse(count)
 }
 
-func (h *CommandHandler) handlePing(ctx context.Context, args []string) string {
-	if ctx.Err() != nil {
-		return h.parser.FormatError("context error: " + ctx.Err().Error())
-	}
-
+func (h *CommandHandler) handlePing(args []string) string {
 	message := "PONG"
 	if len(args) > 0 {
 		message = strings.Join(args, " ")
