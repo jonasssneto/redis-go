@@ -48,37 +48,36 @@ func main() {
 		} else {
 			log.Printf("Replayed AOF")
 		}
-
-		ctn.Store.StartCleanup(1000)
-		defer ctn.Store.StopCleanup()
-
-		listener, err := net.Listen("tcp", ":"+*port)
-		if err != nil {
-			log.Fatalf("failed to start server: %v", err)
-		}
-		defer listener.Close()
-
-		log.Printf("Server is running on port %s (AOF: %v)", *port, *enableAOF)
-
-		sigChan := make(chan os.Signal, 1)
-		signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
-
-		go func() {
-			<-sigChan
-			log.Printf("Caught interrupt, shutting down...")
-			time.Sleep(5 * time.Second)
-			listener.Close()
-		}()
-
-		for {
-			conn, err := listener.Accept()
-			if err != nil {
-				log.Printf("Error accepting connection: %v", err)
-				break
-			}
-
-			go ctn.TCPHandler.HandleConnection(conn)
-		}
 	}
 
+	ctn.Store.StartCleanup(1000)
+	defer ctn.Store.StopCleanup()
+
+	listener, err := net.Listen("tcp", ":"+*port)
+	if err != nil {
+		log.Fatalf("failed to start server: %v", err)
+	}
+	defer listener.Close()
+
+	log.Printf("Server is running on port %s (AOF: %v)", *port, *enableAOF)
+
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+
+	go func() {
+		<-sigChan
+		log.Printf("Caught interrupt, shutting down...")
+		time.Sleep(5 * time.Second)
+		listener.Close()
+	}()
+
+	for {
+		conn, err := listener.Accept()
+		if err != nil {
+			log.Printf("Error accepting connection: %v", err)
+			break
+		}
+
+		go ctn.TCPHandler.HandleConnection(conn)
+	}
 }
